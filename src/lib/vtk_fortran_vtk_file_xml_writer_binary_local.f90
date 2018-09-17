@@ -22,42 +22,10 @@ type, extends(xml_writer_abstract) :: xml_writer_binary_local
     ! deferred methods
     procedure, pass(self) :: initialize                 !< Initialize writer.
     procedure, pass(self) :: finalize                   !< Finalize writer.
-    procedure, pass(self) :: write_dataarray1_rank1_R8P !< Write dataarray 1, rank 1, R8P.
-    procedure, pass(self) :: write_dataarray1_rank1_R4P !< Write dataarray 1, rank 1, R4P.
-    procedure, pass(self) :: write_dataarray1_rank1_I8P !< Write dataarray 1, rank 1, I8P.
-    procedure, pass(self) :: write_dataarray1_rank1_I4P !< Write dataarray 1, rank 1, I4P.
-    procedure, pass(self) :: write_dataarray1_rank1_I2P !< Write dataarray 1, rank 1, I2P.
-    procedure, pass(self) :: write_dataarray1_rank1_I1P !< Write dataarray 1, rank 1, I1P.
-    procedure, pass(self) :: write_dataarray1_rank2_R8P !< Write dataarray 1, rank 2, R8P.
-    procedure, pass(self) :: write_dataarray1_rank2_R4P !< Write dataarray 1, rank 2, R4P.
-    procedure, pass(self) :: write_dataarray1_rank2_I8P !< Write dataarray 1, rank 2, I8P.
-    procedure, pass(self) :: write_dataarray1_rank2_I4P !< Write dataarray 1, rank 2, I4P.
-    procedure, pass(self) :: write_dataarray1_rank2_I2P !< Write dataarray 1, rank 2, I2P.
-    procedure, pass(self) :: write_dataarray1_rank2_I1P !< Write dataarray 1, rank 2, I1P.
-    procedure, pass(self) :: write_dataarray1_rank3_R8P !< Write dataarray 1, rank 3, R8P.
-    procedure, pass(self) :: write_dataarray1_rank3_R4P !< Write dataarray 1, rank 3, R4P.
-    procedure, pass(self) :: write_dataarray1_rank3_I8P !< Write dataarray 1, rank 3, I8P.
-    procedure, pass(self) :: write_dataarray1_rank3_I4P !< Write dataarray 1, rank 3, I4P.
-    procedure, pass(self) :: write_dataarray1_rank3_I2P !< Write dataarray 1, rank 3, I2P.
-    procedure, pass(self) :: write_dataarray1_rank3_I1P !< Write dataarray 1, rank 3, I1P.
-    procedure, pass(self) :: write_dataarray1_rank4_R8P !< Write dataarray 1, rank 4, R8P.
-    procedure, pass(self) :: write_dataarray1_rank4_R4P !< Write dataarray 1, rank 4, R4P.
-    procedure, pass(self) :: write_dataarray1_rank4_I8P !< Write dataarray 1, rank 4, I8P.
-    procedure, pass(self) :: write_dataarray1_rank4_I4P !< Write dataarray 1, rank 4, I4P.
-    procedure, pass(self) :: write_dataarray1_rank4_I2P !< Write dataarray 1, rank 4, I2P.
-    procedure, pass(self) :: write_dataarray1_rank4_I1P !< Write dataarray 1, rank 4, I1P.
-    procedure, pass(self) :: write_dataarray3_rank1_R8P !< Write dataarray 3, rank 1, R8P.
-    procedure, pass(self) :: write_dataarray3_rank1_R4P !< Write dataarray 3, rank 1, R4P.
-    procedure, pass(self) :: write_dataarray3_rank1_I8P !< Write dataarray 3, rank 1, I8P.
-    procedure, pass(self) :: write_dataarray3_rank1_I4P !< Write dataarray 3, rank 1, I4P.
-    procedure, pass(self) :: write_dataarray3_rank1_I2P !< Write dataarray 3, rank 1, I2P.
-    procedure, pass(self) :: write_dataarray3_rank1_I1P !< Write dataarray 3, rank 1, I1P.
-    procedure, pass(self) :: write_dataarray3_rank3_R8P !< Write dataarray 3, rank 3, R8P.
-    procedure, pass(self) :: write_dataarray3_rank3_R4P !< Write dataarray 3, rank 3, R4P.
-    procedure, pass(self) :: write_dataarray3_rank3_I8P !< Write dataarray 3, rank 3, I8P.
-    procedure, pass(self) :: write_dataarray3_rank3_I4P !< Write dataarray 3, rank 3, I4P.
-    procedure, pass(self) :: write_dataarray3_rank3_I2P !< Write dataarray 3, rank 3, I2P.
-    procedure, pass(self) :: write_dataarray3_rank3_I1P !< Write dataarray 3, rank 3, I1P.
+    procedure, pass(self) :: write_dataarray1_rank1_up  !< Write dataarray 1, rank 1, unlimited polymorphic.
+    procedure, pass(self) :: write_dataarray1_rank2_up  !< Write dataarray 1, rank 2, unlimited polymorphic.
+    procedure, pass(self) :: write_dataarray1_rank3_up  !< Write dataarray 1, rank 3, unlimited polymorphic.
+    procedure, pass(self) :: write_dataarray1_rank4_up  !< Write dataarray 1, rank 4, unlimited polymorphic.
     procedure, pass(self) :: write_dataarray_appended   !< Write appended.
 endtype xml_writer_binary_local
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -108,965 +76,146 @@ contains
   endfunction finalize
 
   ! write_dataarray methods
-  function write_dataarray1_rank1_R8P(self, data_name, x, is_tuples) result(error)
+  function write_dataarray1_rank1_up(self, data_name, x, n_components, n_tuples) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (R8P).
+  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (unlimited polymorphic).
   !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
+  class(xml_writer_binary_local),intent(inout)        :: self           !< Writer.
   character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R8P),                     intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
+  class(*),                      intent(in)           :: x(1:)          !< Data variable.
+  integer(I4P),                  intent(in), optional :: n_components   !< Number of components.
+  integer(I4P),                  intent(in), optional :: n_tuples       !< Number of tuples.
   integer(I4P)                                        :: error        !< Error status.
   character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
+  integer(I4P)                                        :: n_components_  !< Number of components.
+  integer(I4P)                                        :: n_tuples_      !< Number of tuples.
+  character(len=:), allocatable                       :: code           !< Data variable encoded, ascii or Base64 codec.
   !---------------------------------------------------------------------------------------------------------------------------------
+  data_type = type2string(x(1))
 
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = 1
+  if (present(n_components)) then
+    n_components_ = n_components
+  else
+    n_components_ = size(x, dim=1)
+  endif
+
+  if (present(n_tuples)) then
+    n_tuples_ = n_tuples
+  else
+    n_tuples_ = size(x, dim=1)
+  endif
   code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
+  call self%write_dataarray_tag(data_type=data_type, n_components=n_components_, data_name=data_name, data_content=code, &
+                                n_tuples=n_tuples_)
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_R8P
+  endfunction write_dataarray1_rank1_up
 
-  function write_dataarray1_rank1_R4P(self, data_name, x, is_tuples) result(error)
+  function write_dataarray1_rank2_up(self, data_name, x, n_components, n_tuples) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (R4P).
+  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (unlimited polymorphic).
   !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R4P),                     intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = 1
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_R4P
-
-  function write_dataarray1_rank1_I8P(self, data_name, x, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (I8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = 1
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_I8P
-
-  function write_dataarray1_rank1_I4P(self, data_name, x, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = 1
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_I4P
-
-  function write_dataarray1_rank1_I2P(self, data_name, x, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = 1
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_I2P
-
-  function write_dataarray1_rank1_I1P(self, data_name, x, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:)        !< Data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = 1
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank1_I1P
-
-  function write_dataarray1_rank2_R8P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
+  class(xml_writer_binary_local),intent(inout)        :: self           !< Writer.
   character(*),                  intent(in)           :: data_name     !< Data name.
-  real(R8P),                     intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
+  class(*),                      intent(in)           :: x(1:,1:)       !< Data variable.
+  integer(I4P),                  intent(in), optional :: n_components   !< Number of components.
+  integer(I4P),                  intent(in), optional :: n_tuples       !< Number of tuples.
   integer(I4P)                                        :: error         !< Error status.
   character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
+  integer(I4P)                                        :: n_components_  !< Number of components.
+  integer(I4P)                                        :: n_tuples_      !< Number of tuples.
+  character(len=:), allocatable                       :: code           !< Data variable encoded, ascii or Base64 codec.
   !---------------------------------------------------------------------------------------------------------------------------------
+  data_type = type2string(x(1,1))
 
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
+  if (present(n_components)) then
+    n_components_ = n_components
+  else
+    n_components_ = size(x, dim=1)
+  endif
+
+  if (present(n_tuples)) then
+    n_tuples_ = n_tuples
+  else
+    n_tuples_ = size(x, dim=1)
   endif
   code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
+  call self%write_dataarray_tag(data_type=data_type, n_components=n_components_, data_name=data_name, data_content=code, &
+                                n_tuples=n_tuples_)
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_R8P
+  endfunction write_dataarray1_rank2_up
 
-  function write_dataarray1_rank2_R4P(self, data_name, x, one_component, is_tuples) result(error)
+  function write_dataarray1_rank3_up(self, data_name, x, n_components, n_tuples) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R4P).
+  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (unlimited polymorphic).
   !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
+  class(xml_writer_binary_local),intent(inout)        :: self           !< Writer.
   character(*),                  intent(in)           :: data_name     !< Data name.
-  real(R4P),                     intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
+  class(*),                      intent(in)           :: x(1:,1:,1:)    !< Data variable.
+  integer(I4P),                  intent(in), optional :: n_components   !< Number of components.
+  integer(I4P),                  intent(in), optional :: n_tuples       !< Number of tuples.
   integer(I4P)                                        :: error         !< Error status.
   character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
+  integer(I4P)                                        :: n_components_  !< Number of components.
+  integer(I4P)                                        :: n_tuples_      !< Number of tuples.
+  character(len=:), allocatable                       :: code           !< Data variable encoded, ascii or Base64 codec.
   !---------------------------------------------------------------------------------------------------------------------------------
+  data_type = type2string(x(1,1,1))
 
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
+  if (present(n_components)) then
+    n_components_ = n_components
+  else
+    n_components_ = size(x, dim=1)
+  endif
+
+  if (present(n_tuples)) then
+    n_tuples_ = n_tuples
+  else
+    n_tuples_ = size(x, dim=1)
   endif
   code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
+  call self%write_dataarray_tag(data_type=data_type, n_components=n_components_, data_name=data_name, data_content=code, &
+                                n_tuples=n_tuples_)
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_R4P
+  endfunction write_dataarray1_rank3_up
 
-  function write_dataarray1_rank2_I8P(self, data_name, x, one_component, is_tuples) result(error)
+
+  function write_dataarray1_rank4_up(self, data_name, x, n_components, n_tuples) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I8P).
+  !< Write `<DataArray... NumberOfComponents="1"...>...</DataArray>` tag (unlimited polymorphic).
   !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
+  class(xml_writer_binary_local),intent(inout)        :: self           !< Writer.
   character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
+  class(*),                      intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
+  integer(I4P),                  intent(in), optional :: n_components   !< Number of components.
+  integer(I4P),                  intent(in), optional :: n_tuples       !< Number of tuples.
   integer(I4P)                                        :: error         !< Error status.
   character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
+  integer(I4P)                                        :: n_components_  !< Number of components.
+  integer(I4P)                                        :: n_tuples_      !< Number of tuples.
+  character(len=:), allocatable                       :: code           !< Data variable encoded, ascii or Base64 codec.
   !---------------------------------------------------------------------------------------------------------------------------------
+  data_type = type2string(x(1,1,1,1))
 
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
+  if (present(n_components)) then
+    n_components_ = n_components
+  else
+    n_components_ = size(x, dim=1)
+  endif
+
+  if (present(n_tuples)) then
+    n_tuples_ = n_tuples
+  else
+    n_tuples_ = size(x, dim=1)
   endif
   code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
+  call self%write_dataarray_tag(data_type=data_type, n_components=n_components_, data_name=data_name, data_content=code, &
+                                n_tuples=n_tuples_)
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_I8P
-
-  function write_dataarray1_rank2_I4P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_I4P
-
-  function write_dataarray1_rank2_I2P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_I2P
-
-  function write_dataarray1_rank2_I1P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:,1:)      !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank2_I1P
-
-  function write_dataarray1_rank3_R8P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  real(R8P),                     intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_R8P
-
-  function write_dataarray1_rank3_R4P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  real(R4P),                     intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_R4P
-
-  function write_dataarray1_rank3_I8P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_I8P
-
-  function write_dataarray1_rank3_I4P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_I4P
-
-  function write_dataarray1_rank3_I2P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_I2P
-
-  function write_dataarray1_rank3_I1P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self          !< Writer.
-  character(*),                  intent(in)           :: data_name     !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:,1:,1:)   !< Data variable.
-  logical,                       intent(in), optional :: one_component !< Force one component.
-  logical,                       intent(in), optional :: is_tuples     !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error         !< Error status.
-  character(len=:), allocatable                       :: data_type     !< Data type.
-  integer(I4P)                                        :: n_components  !< Number of components.
-  character(len=:), allocatable                       :: code          !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank3_I1P
-
-  function write_dataarray1_rank4_R8P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  real(R8P),                     intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_R8P
-
-  function write_dataarray1_rank4_R4P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (R4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  real(R4P),                     intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_R4P
-
-  function write_dataarray1_rank4_I8P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_I8P
-
-  function write_dataarray1_rank4_I4P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_I4P
-
-  function write_dataarray1_rank4_I2P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_I2P
-
-  function write_dataarray1_rank4_I1P(self, data_name, x, one_component, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="n"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self           !< Writer.
-  character(*),                  intent(in)           :: data_name      !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:,1:,1:,1:) !< Data variable.
-  logical,                       intent(in), optional :: one_component  !< Force one component.
-  logical,                       intent(in), optional :: is_tuples      !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error          !< Error status.
-  character(len=:), allocatable                       :: data_type      !< Data type.
-  integer(I4P)                                        :: n_components   !< Number of components.
-  character(len=:), allocatable                       :: code           !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = size(x, dim=1)
-  if (present(one_component)) then
-    if (one_component) n_components = 1
-  endif
-  code = encode_binary_dataarray(x=x)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray1_rank4_I1P
-
-  function write_dataarray3_rank1_R8P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (R8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R8P),                     intent(in)           :: x(1:)        !< X component of data variable.
-  real(R8P),                     intent(in)           :: y(1:)        !< Y component of data variable.
-  real(R8P),                     intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_R8P
-
-  function write_dataarray3_rank1_R4P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (R4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R4P),                     intent(in)           :: x(1:)        !< X component of data variable.
-  real(R4P),                     intent(in)           :: y(1:)        !< Y component of data variable.
-  real(R4P),                     intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_R4P
-
-  function write_dataarray3_rank1_I8P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:)        !< X component of data variable.
-  integer(I8P),                  intent(in)           :: y(1:)        !< Y component of data variable.
-  integer(I8P),                  intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_I8P
-
-  function write_dataarray3_rank1_I4P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:)        !< X component of data variable.
-  integer(I4P),                  intent(in)           :: y(1:)        !< Y component of data variable.
-  integer(I4P),                  intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_I4P
-
-  function write_dataarray3_rank1_I2P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:)        !< X component of data variable.
-  integer(I2P),                  intent(in)           :: y(1:)        !< Y component of data variable.
-  integer(I2P),                  intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_I2P
-
-  function write_dataarray3_rank1_I1P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:)        !< X component of data variable.
-  integer(I1P),                  intent(in)           :: y(1:)        !< Y component of data variable.
-  integer(I1P),                  intent(in)           :: z(1:)        !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank1_I1P
-
-  function write_dataarray3_rank3_R8P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (R8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R8P),                     intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  real(R8P),                     intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  real(R8P),                     intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float64'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_R8P
-
-  function write_dataarray3_rank3_R4P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (R4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  real(R4P),                     intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  real(R4P),                     intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  real(R4P),                     intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Float32'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_R4P
-
-  function write_dataarray3_rank3_I8P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I8P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I8P),                  intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  integer(I8P),                  intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  integer(I8P),                  intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int64'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_I8P
-
-  function write_dataarray3_rank3_I4P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I4P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I4P),                  intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  integer(I4P),                  intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  integer(I4P),                  intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int32'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_I4P
-
-  function write_dataarray3_rank3_I2P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I2P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I2P),                  intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  integer(I2P),                  intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  integer(I2P),                  intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int16'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_I2P
-
-  function write_dataarray3_rank3_I1P(self, data_name, x, y, z, is_tuples) result(error)
-  !---------------------------------------------------------------------------------------------------------------------------------
-  !< Write `<DataArray... NumberOfComponents="3"...>...</DataArray>` tag (I1P).
-  !---------------------------------------------------------------------------------------------------------------------------------
-  class(xml_writer_binary_local), intent(inout)        :: self         !< Writer.
-  character(*),                  intent(in)           :: data_name    !< Data name.
-  integer(I1P),                  intent(in)           :: x(1:,1:,1:)  !< X component of data variable.
-  integer(I1P),                  intent(in)           :: y(1:,1:,1:)  !< Y component of data variable.
-  integer(I1P),                  intent(in)           :: z(1:,1:,1:)  !< Z component of data variable.
-  logical,                       intent(in), optional :: is_tuples    !< Use "NumberOfTuples" instead of "NumberOfComponents".
-  integer(I4P)                                        :: error        !< Error status.
-  character(len=:), allocatable                       :: data_type    !< Data type.
-  integer(I4P)                                        :: n_components !< Number of components.
-  character(len=:), allocatable                       :: code         !< Data variable encoded, binary or Base64 codec.
-  !---------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  data_type = 'Int8'
-  n_components = 3
-  code = encode_binary_dataarray(x=x, y=y, z=z)
-  call self%write_dataarray_tag(data_type=data_type, number_of_components=n_components, data_name=data_name, data_content=code, &
-                                is_tuples=is_tuples)
-  error = self%error
-  !---------------------------------------------------------------------------------------------------------------------------------
-  endfunction write_dataarray3_rank3_I1P
+  endfunction write_dataarray1_rank4_up
 
   subroutine write_dataarray_appended(self)
   !---------------------------------------------------------------------------------------------------------------------------------
