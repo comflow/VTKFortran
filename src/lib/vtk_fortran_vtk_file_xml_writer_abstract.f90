@@ -19,6 +19,7 @@ public :: xyz
 
 integer, public, parameter :: N_AUTO = -1    ! use to automatically set NumberOfComponents/NumberOfTuples
 integer, public, parameter :: N_OMIT =  0    ! use to omit NumberOfComponents/NumberOfTuples
+
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -34,6 +35,7 @@ type, abstract :: xml_writer_abstract
   type(xml_tag) :: tag                             !< XML tags handler.
   integer(I4P)  :: header_type = I8P               !< header type (64-bits precision required for arrays larger than 2GB)
                                                    !< note: 1 bit is lost because Fortran uses signed integers
+  integer(i4P)  :: compression = COMPRESSION_NONE  !< compression type
   contains
     ! public methods (some deferred)
     procedure,                                 pass(self) :: close_xml_file               !< Close xml file.
@@ -262,7 +264,7 @@ endinterface
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 contains
-   
+
   ! files methods
   subroutine close_xml_file(self)
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -317,24 +319,28 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   class(xml_writer_abstract), intent(inout) :: self   !< Writer.
   type(string)                              :: buffer !< Buffer string.
-  character(len=:), allocatable             :: str_header_type, str_byte_order 
+  character(len=:), allocatable             :: str_header_type, str_byte_order, str_compressor
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   buffer = '<?xml version="1.0"?>'//end_rec
   if (endian==endianL) then
-     str_byte_order = 'LittleEndian'
+     str_byte_order = ' byte_order="LittleEndian"'
   else
-     str_byte_order = 'BigEndian'
+     str_byte_order = ' byte_order="BigEndian"'
   endif
   if (self%header_type==I8P) then
-     str_header_type = 'UInt64'
+     str_header_type = ' header_type="UInt64"'
   else
-     str_header_type = 'UInt32'
+     str_header_type = ' header_type="UInt32"'
   endif
-  
-  buffer = buffer//'<VTKFile type="'//self%topology//'" version="1.0" byte_order="'&
-                     //str_byte_order//'" header_type="'//str_header_type//'">'
+
+  str_compressor = ""
+  if (self%compression==COMPRESSION_ZLIB) then
+     str_compressor=' compressor="vtkZLibDataCompressor"'
+  endif
+  buffer = buffer//'<VTKFile type="'//self%topology//'" version="1.0"'&
+                     //str_byte_order//str_header_type//str_compressor//'>'
   write(unit=self%xml, iostat=self%error)buffer//end_rec
   self%indent = 2
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -512,7 +518,7 @@ contains
   n_components_   = N_OMIT
   if (present(n_components)) n_components_ = n_components
   if (present(n_tuples)) n_tuples_ = n_tuples
-  
+
   if (n_tuples_>0 .and. n_components_>0) then
     tag_attributes =  'type="'//trim(adjustl(data_type))//            &
       '" NumberOfComponents="'//trim(str(n_components, .true.))//   &

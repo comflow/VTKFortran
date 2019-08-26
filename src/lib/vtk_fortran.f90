@@ -6,6 +6,7 @@ module vtk_fortran
 use vtk_fortran_pvtk_file, only: pvtk_file
 use vtk_fortran_vtk_file,  only: vtk_file
 use vtk_fortran_vtm_file,  only: vtm_file
+use vtk_fortran_parameters
 use vtk_fortran_utilities, only: xyz
 !-----------------------------------------------------------------------------------------------------------------------------------
 

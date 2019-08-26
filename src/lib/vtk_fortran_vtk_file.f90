@@ -29,7 +29,7 @@ type :: vtk_file
 endtype vtk_file
 !-----------------------------------------------------------------------------------------------------------------------------------
 contains
-  function initialize(self, format, filename, mesh_topology, nx1, nx2, ny1, ny2, nz1, nz2, header_type) result(error)
+  function initialize(self, format, filename, mesh_topology, nx1, nx2, ny1, ny2, nz1, nz2, header_type, compression) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Initialize file (writer).
   !<
@@ -71,6 +71,7 @@ contains
   integer(I4P),    intent(in),  optional :: nz1           !< Initial node of z axis.
   integer(I4P),    intent(in),  optional :: nz2           !< Final node of z axis.
   integer(I4P),    intent(in),  optional :: header_type   !< 32-bits/64-bits headers in binary XML
+  integer(I4P),    intent(in),  optional :: compression   !< compression mode
   integer(I4P)                           :: error         !< Error status.
   type(string)                           :: fformat       !< File format.
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -92,6 +93,7 @@ contains
     error = 1
   endselect
   if (present(header_type)) self%xml_writer%header_type = header_type
+  if (present(compression)) self%xml_writer%compression = compression
      
   error = self%xml_writer%initialize(format=format, filename=filename, mesh_topology=mesh_topology, &
                                      nx1=nx1, nx2=nx2, ny1=ny1, ny2=ny2, nz1=nz1, nz2=nz2)

@@ -44,6 +44,18 @@ type, extends(xml_writer_abstract) :: xml_writer_appended
     procedure, pass(self), private :: write_on_scratch_dataarray1_rank3     !< Write dataarray, data 1 rank 3.
     procedure, pass(self), private :: write_on_scratch_dataarray1_rank4     !< Write dataarray, data 1 rank 4.
 endtype xml_writer_appended
+
+interface
+   ! extern "C" int compress_memory(void *in_data, size_t in_data_size, void **out_data, size_t *out_data_size)
+   integer(c_int) function compress_memory(in_data, in_data_size, out_data, out_data_size) bind(C,name="compress_memory")
+   use iso_c_binding
+   type(c_ptr),         intent(in), value :: in_data
+   integer(c_size_t),   intent(in), value :: in_data_size
+   type(c_ptr),         intent(in)        :: out_data
+   integer(c_size_t),   intent(in)        :: out_data_size
+   end function
+end interface
+
 !-----------------------------------------------------------------------------------------------------------------------------------
 contains
   function initialize(self, format, filename, mesh_topology, nx1, nx2, ny1, ny2, nz1, nz2, mesh_kind) result(error)
@@ -108,7 +120,7 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   class(xml_writer_appended), intent(inout) :: self  !< Writer.
   integer(I8P),               intent(in)    :: n_byte    !< Number of bytes saved.
-  integer(I8P)                              :: increment 
+  integer(I8P)                              :: increment
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -432,6 +444,7 @@ contains
 
   ! write_on_scratch_dataarray methods
   function write_on_scratch_dataarray1_rank1(self, x) result(n_byte)
+  use iso_c_binding, only: c_ptr, c_size_t, c_f_pointer, c_int, c_loc
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Write a dataarray with 1 components of rank 1.
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -439,40 +452,57 @@ contains
   class(*),                   intent(in)    :: x(1:)  !< Data variable.
   integer(I8P)                              :: n_byte !< Number of bytes
   integer(I8P)                              :: nn     !< Number of elements.
+  byte, pointer                             :: zlib_buffer(:)
+  type(c_ptr)                               :: zlib_buffer_c
+  integer(c_size_t)                         :: compressed_length
+  integer(c_int)                            :: ierr
+  character(len=2)                          :: code
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
-  nn = size(x, dim=1, kind=I8P)
-  select type(x)
-  type is(real(R8P))
-    n_byte = nn*BYR8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(real(R4P))
-    n_byte = nn*BYR4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I8P))
-    n_byte = nn*BYI8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I4P))
-    n_byte = nn*BYI4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I2P))
-    n_byte = nn*BYI2P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I2', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I1P))
-    n_byte = nn*BYI1P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I1', nn
-    write(unit=self%scratch, iostat=self%error)x
-  endselect
+  if (self%compression==COMPRESSION_ZLIB) then
+     n_byte = size(x, kind=I8P) * sizeof(x(1))
+     print *, "is_contiguous: ", is_contiguous(x)
+     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
+     write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
+        100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
+     write(unit=self%scratch, iostat=self%error) int(compressed_length,kind=I8P), 'I1', int(compressed_length,kind=I8P)
+     write(unit=self%scratch, iostat=self%error) zlib_buffer
+  else
+     nn = size(x, kind=I8P)
+     select type(x)
+     type is(real(R8P))
+       n_byte = nn*BYR8P
+       code = 'R8'
+     type is(real(R4P))
+       n_byte = nn*BYR4P
+       code = 'R4'
+     type is(integer(I8P))
+       n_byte = nn*BYI8P
+       code = 'I8'
+     type is(integer(I4P))
+       n_byte = nn*BYI4P
+       code = 'I4'
+     type is(integer(I2P))
+       n_byte = nn*BYI2P
+       code = 'I2'
+     type is(integer(I1P))
+       n_byte = nn*BYI1P
+       code = 'I1'
+     class default
+       return
+     endselect
+     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+     write(unit=self%scratch, iostat=self%error) x
+  endif
+
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank1
 
   function write_on_scratch_dataarray1_rank2(self, x) result(n_byte)
+  use iso_c_binding, only: c_ptr, c_size_t, c_f_pointer, c_int, c_loc
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Write a dataarray with 1 components of rank 2.
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -480,40 +510,54 @@ contains
   class(*),                   intent(in)    :: x(1:,1:) !< Data variable.
   integer(I8P)                              :: n_byte   !< Number of bytes
   integer(I8P)                              :: nn       !< Number of elements.
+  byte, pointer                             :: zlib_buffer(:)
+  type(c_ptr)                               :: zlib_buffer_c
+  integer(c_size_t)                         :: compressed_length
+  integer(c_int)                            :: ierr
+  character(len=2)                          :: code
   !------------------------------------------------------------------------------------------------------------------------------
-
-  !---------------------------------------------------------------------------------------------------------------------------------
-  nn = size(x, kind=I8P)
-  select type(x)
-  type is(real(R8P))
-    n_byte = nn*BYR8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(real(R4P))
-    n_byte = nn*BYR4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I8P))
-    n_byte = nn*BYI8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I4P))
-    n_byte = nn*BYI4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I2P))
-    n_byte = nn*BYI2P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I2', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I1P))
-    n_byte = nn*BYI1P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I1', nn
-    write(unit=self%scratch, iostat=self%error)x
-  endselect
+  if (self%compression==COMPRESSION_ZLIB) then
+     n_byte = size(x, kind=I8P) * sizeof(x(1,1))
+     print *, "is_contiguous: ", is_contiguous(x)
+     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
+     write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
+        100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
+     write(unit=self%scratch, iostat=self%error) int(compressed_length,kind=I8P), 'I1', int(compressed_length,kind=I8P)
+     write(unit=self%scratch, iostat=self%error) zlib_buffer
+  else
+     nn = size(x, kind=I8P)
+     select type(x)
+     type is(real(R8P))
+       n_byte = nn*BYR8P
+       code = 'R8'
+     type is(real(R4P))
+       n_byte = nn*BYR4P
+       code = 'R4'
+     type is(integer(I8P))
+       n_byte = nn*BYI8P
+       code = 'I8'
+     type is(integer(I4P))
+       n_byte = nn*BYI4P
+       code = 'I4'
+     type is(integer(I2P))
+       n_byte = nn*BYI2P
+       code = 'I2'
+     type is(integer(I1P))
+       n_byte = nn*BYI1P
+       code = 'I1'
+     class default
+       return
+     endselect
+     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+     write(unit=self%scratch, iostat=self%error) x
+  endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank2
 
   function write_on_scratch_dataarray1_rank3(self, x) result(n_byte)
+  use iso_c_binding, only: c_ptr, c_size_t, c_f_pointer, c_int, c_loc
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Write a dataarray with 1 components of rank 3.
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -521,40 +565,54 @@ contains
   class(*),                   intent(in)    :: x(1:,1:,1:) !< Data variable.
   integer(I8P)                              :: n_byte      !< Number of bytes
   integer(I8P)                              :: nn          !< Number of elements.
-  !------------------------------------------------------------------------------------------------------------------------------
-
+  byte, pointer                             :: zlib_buffer(:)
+  type(c_ptr)                               :: zlib_buffer_c
+  integer(c_size_t)                         :: compressed_length
+  integer(c_int)                            :: ierr
+  character(len=2)                          :: code
   !---------------------------------------------------------------------------------------------------------------------------------
-  nn = size(x, kind=I8P)
-  select type(x)
-  type is(real(R8P))
-    n_byte = nn*BYR8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(real(R4P))
-    n_byte = nn*BYR4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I8P))
-    n_byte = nn*BYI8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I4P))
-    n_byte = nn*BYI4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I2P))
-    n_byte = nn*BYI2P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I2', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I1P))
-    n_byte = nn*BYI1P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I1', nn
-    write(unit=self%scratch, iostat=self%error)x
-  endselect
+  if (self%compression==COMPRESSION_ZLIB) then
+     n_byte = size(x, kind=I8P) * sizeof(x(1,1,1))
+     print *, "is_contiguous: ", is_contiguous(x)
+     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
+     write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
+        100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
+     write(unit=self%scratch, iostat=self%error) int(compressed_length,kind=I8P), 'I1', int(compressed_length,kind=I8P)
+     write(unit=self%scratch, iostat=self%error) zlib_buffer
+  else
+     nn = size(x, kind=I8P)
+     select type(x)
+     type is(real(R8P))
+       n_byte = nn*BYR8P
+       code = 'R8'
+     type is(real(R4P))
+       n_byte = nn*BYR4P
+       code = 'R4'
+     type is(integer(I8P))
+       n_byte = nn*BYI8P
+       code = 'I8'
+     type is(integer(I4P))
+       n_byte = nn*BYI4P
+       code = 'I4'
+     type is(integer(I2P))
+       n_byte = nn*BYI2P
+       code = 'I2'
+     type is(integer(I1P))
+       n_byte = nn*BYI1P
+       code = 'I1'
+     class default
+       return
+     endselect
+     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+     write(unit=self%scratch, iostat=self%error) x
+  endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank3
 
   function write_on_scratch_dataarray1_rank4(self, x) result(n_byte)
+  use iso_c_binding, only: c_ptr, c_size_t, c_f_pointer, c_int, c_loc
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Write a dataarray with 1 components of rank 4.
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -562,36 +620,49 @@ contains
   class(*),                   intent(in)    :: x(1:,1:,1:,1:) !< Data variable.
   integer(I8P)                              :: n_byte         !< Number of bytes
   integer(I8P)                              :: nn             !< Number of elements.
-  !------------------------------------------------------------------------------------------------------------------------------
-
+  byte, pointer                             :: zlib_buffer(:)
+  type(c_ptr)                               :: zlib_buffer_c
+  integer(c_size_t)                         :: compressed_length
+  integer(c_int)                            :: ierr
+  character(len=2)                          :: code
   !---------------------------------------------------------------------------------------------------------------------------------
-  nn = size(x, kind=I8P)
-  select type(x)
-  type is(real(R8P))
-    n_byte = nn*BYR8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(real(R4P))
-    n_byte = nn*BYR4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'R4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I8P))
-    n_byte = nn*BYI8P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I8', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I4P))
-    n_byte = nn*BYI4P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I4', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I2P))
-    n_byte = nn*BYI2P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I2', nn
-    write(unit=self%scratch, iostat=self%error)x
-  type is(integer(I1P))
-    n_byte = nn*BYI1P
-    write(unit=self%scratch, iostat=self%error)n_byte, 'I1', nn
-    write(unit=self%scratch, iostat=self%error)x
-  endselect
+  if (self%compression==COMPRESSION_ZLIB) then
+     n_byte = size(x, kind=I8P) * sizeof(x(1,1,1,1))
+     print *, "is_contiguous: ", is_contiguous(x)
+     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
+     write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
+        100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
+     write(unit=self%scratch, iostat=self%error) int(compressed_length,kind=I8P), 'I1', int(compressed_length,kind=I8P)
+     write(unit=self%scratch, iostat=self%error) zlib_buffer
+  else
+     nn = size(x, kind=I8P)
+     select type(x)
+     type is(real(R8P))
+       n_byte = nn*BYR8P
+       code = 'R8'
+     type is(real(R4P))
+       n_byte = nn*BYR4P
+       code = 'R4'
+     type is(integer(I8P))
+       n_byte = nn*BYI8P
+       code = 'I8'
+     type is(integer(I4P))
+       n_byte = nn*BYI4P
+       code = 'I4'
+     type is(integer(I2P))
+       n_byte = nn*BYI2P
+       code = 'I2'
+     type is(integer(I1P))
+       n_byte = nn*BYI1P
+       code = 'I1'
+     class default
+       return
+     endselect
+     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+     write(unit=self%scratch, iostat=self%error) x
+  endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank4
 
