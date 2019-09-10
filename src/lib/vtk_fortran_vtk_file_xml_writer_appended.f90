@@ -342,6 +342,10 @@ contains
     call read_dataarray_from_scratch
     if (self%error==0) call write_dataarray_on_xml
     if (is_iostat_end(self%error)) exit
+    if (self%error/=0) then
+       print *, "ERROR while reading scratch file, no VTK file will be produced"
+       exit
+    endif
   enddo
   close(unit=self%scratch, iostat=self%error)
   write(unit=self%xml, iostat=self%error)end_rec
