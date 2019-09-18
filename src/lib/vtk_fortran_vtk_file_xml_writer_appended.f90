@@ -466,8 +466,8 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   if (self%compression==COMPRESSION_ZLIB) then
      n_byte = size(x, kind=I8P) * sizeof(x(1))
-     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
-                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     !ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+     !                       out_data=zlib_buffer_c, out_data_size=compressed_length )
      call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
      write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
         100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
@@ -521,8 +521,8 @@ contains
   !------------------------------------------------------------------------------------------------------------------------------
   if (self%compression==COMPRESSION_ZLIB) then
      n_byte = size(x, kind=I8P) * sizeof(x(1,1))
-     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
-                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     !ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+     !                       out_data=zlib_buffer_c, out_data_size=compressed_length )
      call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
      write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
         100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
@@ -575,8 +575,8 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   if (self%compression==COMPRESSION_ZLIB) then
      n_byte = size(x, kind=I8P) * sizeof(x(1,1,1))
-     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
-                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     !ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+     !                       out_data=zlib_buffer_c, out_data_size=compressed_length )
      call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
      write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
         100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
@@ -629,8 +629,8 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   if (self%compression==COMPRESSION_ZLIB) then
      n_byte = size(x, kind=I8P) * sizeof(x(1,1,1,1))
-     ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
-                            out_data=zlib_buffer_c, out_data_size=compressed_length )
+     !ierr = compress_memory(in_data=c_loc(x), in_data_size=n_byte, &
+     !                       out_data=zlib_buffer_c, out_data_size=compressed_length )
      call c_f_pointer(zlib_buffer_c, zlib_buffer, shape=[compressed_length])
      write(*,'("ZLIB relative size after compression of appended data: ",G0," % (",I0," -> ",I0,")")') &
         100. * real(compressed_length)/real(n_byte), n_byte, compressed_length
