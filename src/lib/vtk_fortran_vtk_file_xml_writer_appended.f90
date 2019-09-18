@@ -479,26 +479,36 @@ contains
      type is(real(R8P))
        n_byte = nn*BYR8P
        code = 'R8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(real(R4P))
        n_byte = nn*BYR4P
        code = 'R4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I8P))
        n_byte = nn*BYI8P
        code = 'I8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I4P))
        n_byte = nn*BYI4P
        code = 'I4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I2P))
        n_byte = nn*BYI2P
        code = 'I2'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I1P))
        n_byte = nn*BYI1P
        code = 'I1'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      class default
        return
      endselect
-     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
-     write(unit=self%scratch, iostat=self%error) x
   endif
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -534,26 +544,36 @@ contains
      type is(real(R8P))
        n_byte = nn*BYR8P
        code = 'R8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(real(R4P))
        n_byte = nn*BYR4P
        code = 'R4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I8P))
        n_byte = nn*BYI8P
        code = 'I8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I4P))
        n_byte = nn*BYI4P
        code = 'I4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I2P))
        n_byte = nn*BYI2P
        code = 'I2'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I1P))
        n_byte = nn*BYI1P
        code = 'I1'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      class default
        return
      endselect
-     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
-     write(unit=self%scratch, iostat=self%error) x
   endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank2
@@ -588,26 +608,36 @@ contains
      type is(real(R8P))
        n_byte = nn*BYR8P
        code = 'R8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(real(R4P))
        n_byte = nn*BYR4P
        code = 'R4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I8P))
        n_byte = nn*BYI8P
        code = 'I8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I4P))
        n_byte = nn*BYI4P
        code = 'I4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I2P))
        n_byte = nn*BYI2P
        code = 'I2'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I1P))
        n_byte = nn*BYI1P
        code = 'I1'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      class default
        return
      endselect
-     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
-     write(unit=self%scratch, iostat=self%error) x
   endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank3
@@ -642,26 +672,36 @@ contains
      type is(real(R8P))
        n_byte = nn*BYR8P
        code = 'R8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(real(R4P))
        n_byte = nn*BYR4P
        code = 'R4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I8P))
        n_byte = nn*BYI8P
        code = 'I8'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I4P))
        n_byte = nn*BYI4P
        code = 'I4'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I2P))
        n_byte = nn*BYI2P
        code = 'I2'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      type is(integer(I1P))
        n_byte = nn*BYI1P
        code = 'I1'
+       write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
+       write(unit=self%scratch, iostat=self%error) x
      class default
        return
      endselect
-     write(unit=self%scratch, iostat=self%error) n_byte, code(1:2), nn
-     write(unit=self%scratch, iostat=self%error) x
   endif
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_on_scratch_dataarray1_rank4
