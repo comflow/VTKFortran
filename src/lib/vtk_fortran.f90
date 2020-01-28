@@ -7,7 +7,7 @@ use vtk_fortran_pvtk_file, only: pvtk_file
 use vtk_fortran_vtk_file,  only: vtk_file
 use vtk_fortran_vtm_file,  only: vtm_file
 use vtk_fortran_parameters
-use vtk_fortran_utilities, only: xyz
+!use vtk_fortran_utilities, only: xyz
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -16,6 +16,6 @@ private
 public :: pvtk_file
 public :: vtk_file
 public :: vtm_file
-public :: xyz
+!public :: xyz
 !-----------------------------------------------------------------------------------------------------------------------------------
 endmodule vtk_fortran

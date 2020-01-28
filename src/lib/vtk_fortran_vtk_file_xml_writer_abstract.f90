@@ -15,7 +15,6 @@ implicit none
 private
 public :: xml_writer_abstract
 public :: type2string
-public :: xyz
 
 integer, public, parameter :: N_AUTO = -1    ! use to automatically set NumberOfComponents/NumberOfTuples
 integer, public, parameter :: N_OMIT =  0    ! use to omit NumberOfComponents/NumberOfTuples
@@ -801,7 +800,7 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction write_geo_strg_data1_rank4_R8P
 
-  function write_geo_strg_data1_rank4_R4P(self, xyz) result(error)
+  function write_geo_strg_data1_rank4_R4P(self, xyz ) result(error)
   !---------------------------------------------------------------------------------------------------------------------------------
   !< Write mesh with **StructuredGrid** topology (data 1, rank 4, R4P).
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -828,6 +827,7 @@ contains
   real(R8P),                  intent(in)    :: y(1:) !< Y coordinates.
   real(R8P),                  intent(in)    :: z(1:) !< Z coordinates.
   integer(I4P)                              :: error !< Error status.
+  real(R8P), allocatable                    :: xyz(:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -836,7 +836,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x,y,z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -852,6 +854,7 @@ contains
   real(R4P),                  intent(in)    :: y(1:) !< Y coordinates.
   real(R4P),                  intent(in)    :: z(1:) !< Z coordinates.
   integer(I4P)                              :: error !< Error status.
+  real(R4P), allocatable                    :: xyz(:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -860,7 +863,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x,y,z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -876,6 +881,7 @@ contains
   real(R8P),                  intent(in)    :: y(1:,1:,1:) !< Y coordinates.
   real(R8P),                  intent(in)    :: z(1:,1:,1:) !< Z coordinates.
   integer(I4P)                              :: error       !< Error status.
+  real(R8P), allocatable                    :: xyz(:,:,:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -886,7 +892,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x, y, z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -902,6 +910,7 @@ contains
   real(R4P),                  intent(in)    :: y(1:,1:,1:) !< Y coordinates.
   real(R4P),                  intent(in)    :: z(1:,1:,1:) !< Z coordinates.
   integer(I4P)                              :: error       !< Error status.
+  real(R4P), allocatable                    :: xyz(:,:,:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -912,7 +921,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x, y, z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -984,6 +995,7 @@ contains
   real(R8P),                  intent(in)    :: y(1:) !< Y coordinates.
   real(R8P),                  intent(in)    :: z(1:) !< Z coordinates.
   integer(I4P)                              :: error !< Error status.
+  real(R8P), allocatable                    :: xyz(:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -996,7 +1008,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x, y, z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -1013,6 +1027,7 @@ contains
   real(R4P),                  intent(in)    :: y(1:) !< Y coordinates.
   real(R4P),                  intent(in)    :: z(1:) !< Z coordinates.
   integer(I4P)                              :: error !< Error status.
+  real(R4P), allocatable                    :: xyz(:,:)
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -1025,7 +1040,9 @@ contains
     return
   endif
   call self%write_start_tag(name='Points')
-  error = self%write_dataarray(data_name='Points', x=xyz(x,y,z), n_tuples=N_OMIT)
+  call concat(xyz, x, y, z)
+  error = self%write_dataarray(data_name='Points', x=xyz, n_tuples=N_OMIT)
+  if (allocated(xyz)) deallocate(xyz)
   call self%write_end_tag(name='Points')
   error = self%error
   !---------------------------------------------------------------------------------------------------------------------------------
